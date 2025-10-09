@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <link rel="stylesheet" href="style.css"/>
+</head>
+
+<body>
+    <main class="container">
+        <h1>Weather App</h1>
+        
+        <form id="search-form" autocomplete="off">
+            <input id="query" type="text" placeholder="Enter a city (e.g. Dallas)" spellcheck="false" />
+            <button type="submit">Get Weather</button>
+            
+        </form>
+
+        <section id="result" aria-live="polite"></section>
+    </main>
+
+    <script src="app.js" defer></script>
+</body>
+</html>
