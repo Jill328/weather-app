@@ -1,10 +1,10 @@
-const form = document.getElementById(('search-form');
+const form = document.getElementById('search-form');
 const input = document.getElementById('query');
 const result = document.getElementById('result');
 
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const q = uinput.value.trim();
+    const q = input.value.trim();
     if (!q) return;
 
     setLoading(true);
@@ -22,6 +22,7 @@ form.addEventListener('submit', async (e) => {
 function setLoading(isLoading) {
     result.innerHTML = isLoading ? `<pclass="meta">Loading...<p>` : '';
 }
+
 function renderError(msg) {
     result.innerHTML = `<p class="error">${msg}</p>`;
 }
@@ -36,7 +37,7 @@ async function geocode(city) {
     if (!res.ok) throw new Error('Geocoding failed.');
     const data = await res.json();
     if (!data.results || data.results.length === 0) {
-        throw new Error(`No results for "${city}'. Try another city.`);
+        throw new Error(`No results for "${city}". Try another city.`);
     }
     const { name, country, latitude, longitude, timezone } = data.results[0];
     return { name, country, latitude, longitude, timezone };
@@ -60,24 +61,27 @@ function renderCard(place, wx) {
     const maxT = Math.round(wx.daily.temperature_2m_max[0]);
     const minT = Math.round(wx.daily.temperature_2m_min[0]);   
    
-    result.innerHTML =
-    `<div class="card">
+    result.innerHTML = `
+    <div class= "card">
         <h2>${place.name}, ${place.country}</h2>
         <p class="meta">Timezone: ${wx.timezone}</p>
         <div class="temp" data-c="${temp}">${temp}°C</div>
         <div class ="grid">
-            <div class= "item"><strong>High</stong><br>span data-c="${maxT}">${maxT}°C</span></div>
-            <div class= "item"><strong>Low</stong><br>span data-c="${minT}">${minT}°C</span></div>
-            <div class= "item"><strong>Wind</stong><br><span>${wind} km/h</span></div>
+            <div class= "item"><strong>High</strong><br /><span data-c="${maxT}">${maxT}°C</span></div>
+            
+            <div class= "item"><strong>Low</strong><br /><span data-c="${minT}">${minT}°C</span></div>
+            
+            <div class= "item"><strong>Wind</strong><br /><span>${wind} km/h</span></div>
     </div>
     <div style ="margin-top:10px">
-        button id="toggle">Toggle °F</button>
+        <button id="toggle">Toggle °F</button>
     </div>
-    </div>`;   
-    
+       
+    </div>
+    `;
     const btn = document.getElementById('toggle');
     btn.addEventListener('click', () => toggleUnits(btn));
-
+    }
     function ctoF(c) { return Math.round((c * 9) /5 + 32); }
 
     function toggleUnits(btn) {
@@ -100,7 +104,7 @@ function renderCard(place, wx) {
             btn.textContent = 'Show °C';
         }
     }   
-}
+
 
 
 
