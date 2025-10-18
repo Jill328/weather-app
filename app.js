@@ -1,18 +1,29 @@
+console.log("app.js loaded");
+document.getElementById('result').textContent= 'JS connected';
+
+
 const form = document.getElementById('search-form');
 const input = document.getElementById('query');
 const result = document.getElementById('result');
+
 
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const q = input.value.trim();
     if (!q) return;
 
+    console.log('[submit]', q);
     setLoading(true);
     try {
-        const place = await GeolocationCoordinates(q);
+        const place = await geocode(q);
+        console.log('[geocode ok]', place);
+
         const wx  = await getWeather(place);
+        console.log('[weather ok]', wx.current_weather, wx.daily);
+
         renderCard(place, wx);
     } catch (err) {
+        console.error('[error]', err);
         renderError(err.message || 'Something went wrong.');    
     } finally {
         setLoading(false);
@@ -20,7 +31,7 @@ form.addEventListener('submit', async (e) => {
 });
 
 function setLoading(isLoading) {
-    result.innerHTML = isLoading ? `<pclass="meta">Loading...<p>` : '';
+    result.innerHTML = isLoading ? `<p class="meta">Loading...<p>` : '';
 }
 
 function renderError(msg) {
@@ -44,10 +55,10 @@ async function geocode(city) {
 }
 
 async function getWeather(place) {
-    const url = new URL('https://api.open-meteo.com/vl/forecast');
+    const url = new URL('https://api.open-meteo.com/v1/forecast');
     url.searchParams.set('latitude', place.latitude);
     url.searchParams.set('longitude', place.longitude);
-    url.searchParams.set('current_weather', true); 
+    url.searchParams.set('current_weather', 'true'); 
     url.searchParams.set('daily', 'temperature_2m_max,temperature_2m_min,precipitation_sum');
     url.searchParams.set('timezone', place.timezone || 'auto');
     
@@ -56,10 +67,10 @@ async function getWeather(place) {
     return res.json();
 }
 function renderCard(place, wx) {
-    const temp = Math.round(wx.current_weather.temperature);
-    const wind = Math.round(wx.current_weather.windspeed);
-    const maxT = Math.round(wx.daily.temperature_2m_max[0]);
-    const minT = Math.round(wx.daily.temperature_2m_min[0]);   
+    const temp = Math.round(wx.current_weather?.temperature ?? NaN);
+    const wind = Math.round(wx.current_weather?.windspeed ?? NaN);
+    const maxT = Math.round(wx.daily?.temperature_2m_max?.[0] ?? NaN);
+    const minT = Math.round(wx.daily?.temperature_2m_min?.[0] ?? NaN);   
    
     result.innerHTML = `
     <div class= "card">
@@ -72,11 +83,10 @@ function renderCard(place, wx) {
             <div class= "item"><strong>Low</strong><br /><span data-c="${minT}">${minT}°C</span></div>
             
             <div class= "item"><strong>Wind</strong><br /><span>${wind} km/h</span></div>
-    </div>
-    <div style ="margin-top:10px">
-        <button id="toggle">Toggle °F</button>
-    </div>
-       
+        </div>
+        <div style ="margin-top:10px">
+        <button id="toggle">Show °F</button>
+        </div>   
     </div>
     `;
     const btn = document.getElementById('toggle');
@@ -86,15 +96,17 @@ function renderCard(place, wx) {
 
     function toggleUnits(btn) {
         const tempEl = result.querySelector('.temp');
-        const numEls = result.querySelectorAll('[data-c]');     
+        const numEls = result.querySelectorAll('[data-c]'); 
 
-        const showingF = btn.textContent.includes('°C');
+        const showingF = btn.textContent.includes('°C'); ////if button says "show C", we're currently on F   
 
         if (showingF) {
+            // switch to C
             tempEl.textContent = `${tempEl.dataset.c}°C`;
-            numEls.forEach(el => el.textContent = `${el.dataset.c}°C`);     
+            numEls.forEach(el => { el.textContent = `${el.dataset.c}°C`});     
             btn.textContent = 'Show °F';
         }   else {
+            // switch to F (convert from stored Celsius)    
             const tc = Number(tempEl.dataset.c);
             tempEl.textContent = `${ctoF(tc)}°F`;
             numEls.forEach(el => {
@@ -119,6 +131,3 @@ function renderCard(place, wx) {
     
     
     
-    {
-    
-}
