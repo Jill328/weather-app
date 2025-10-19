@@ -1,20 +1,26 @@
-console.log("app.js loaded");
-document.getElementById('result').textContent= 'JS connected';
+//console.log("app.js loaded");
+//document.getElementById('result').textContent= 'JS connected';
 
 
 const form = document.getElementById('search-form');
 const input = document.getElementById('query');
 const result = document.getElementById('result');
+const submitBtn = form.querySelector('button');
 
 
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const q = input.value.trim();
-    if (!q) return;
 
-    console.log('[submit]', q);
-    setLoading(true);
+    if (!q.length < 2) {
+        renderError('Please enter at least 2 characters.');
+        return;
+    }
+
+    setLoading(true); //disables button and shows loading message
     try {
+        console.log('[submit]', q);
+
         const place = await geocode(q);
         console.log('[geocode ok]', place);
 
@@ -22,6 +28,7 @@ form.addEventListener('submit', async (e) => {
         console.log('[weather ok]', wx.current_weather, wx.daily);
 
         renderCard(place, wx);
+        console.log('[render ok]');
     } catch (err) {
         console.error('[error]', err);
         renderError(err.message || 'Something went wrong.');    
@@ -31,6 +38,8 @@ form.addEventListener('submit', async (e) => {
 });
 
 function setLoading(isLoading) {
+    submitBtn.disabled = isLoading;
+    submitBtn.setAttribute('aria-busy', String(isLoading));
     result.innerHTML = isLoading ? `<p class="meta">Loading...<p>` : '';
 }
 
@@ -68,6 +77,8 @@ async function getWeather(place) {
 }
 function renderCard(place, wx) {
     const temp = Math.round(wx.current_weather?.temperature ?? NaN);
+    const code = wx.current_weather?.weathercode ?? NaN;
+    const icon = getIcon(code);
     const wind = Math.round(wx.current_weather?.windspeed ?? NaN);
     const maxT = Math.round(wx.daily?.temperature_2m_max?.[0] ?? NaN);
     const minT = Math.round(wx.daily?.temperature_2m_min?.[0] ?? NaN);   
@@ -75,6 +86,7 @@ function renderCard(place, wx) {
     result.innerHTML = `
     <div class= "card">
         <h2>${place.name}, ${place.country}</h2>
+        <img src="${icon.src} alt="${icon.alt}" class="icon">
         <p class="meta">Timezone: ${wx.timezone}</p>
         <div class="temp" data-c="${temp}">${temp}°C</div>
         <div class ="grid">
@@ -93,6 +105,23 @@ function renderCard(place, wx) {
     btn.addEventListener('click', () => toggleUnits(btn));
     }
     function ctoF(c) { return Math.round((c * 9) /5 + 32); }
+
+    function getIcon(code) {
+      const icons = {
+        0: { src: "icons/clear.png", alt: "Clear sky" },
+        1: { src: "icons/mostly-clear.png", alt: "Mostly clear" },
+        2: { src: "icons/partly-cloudy.png", alt: "Partly cloudy" },
+        3: { src: "icons/cloudy.png", alt: "Cloudy" },
+        45: { src: "icons/fog.png", alt: "Fog" },
+        48: { src: "icons/fog.png", alt: "Depositing rime fog" },
+        51: { src: "icons/drizzle.png", alt: "Light drizzle" },
+        61: { src: "icons/rain.png", alt: "Rain" },
+        71: { src: "icons/snow.png", alt: "Snow" },
+        80: { src: "icons/showers.png", alt: "Rain showers" },
+        95: { src: "icons/thunder.png", alt: "Thunderstorm" },
+    };
+    return icons[code] || { src: "icons/unknown.png", alt: "Unknown weather" };    
+        }
 
     function toggleUnits(btn) {
         const tempEl = result.querySelector('.temp');

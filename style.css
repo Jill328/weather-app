@@ -60,3 +60,13 @@ button:hover { filter: brightness(0.95); }
 .grid { display:grid; grid-template-columns: repeat(3,1fr); gap:8px; }
 .item { background: #f8fafc; padding: 10px; border-radius: 8px; text-align: center; }
 .error { color: #b91c1c; font-weight:600;} 
+
+button[disabled] {
+     opacity: .6; cursor: not allowed; }
+
+.icon {
+    width: 60px;
+    height: 60px;
+    display: block;
+    margin: 0 auto 8px; 
+}
